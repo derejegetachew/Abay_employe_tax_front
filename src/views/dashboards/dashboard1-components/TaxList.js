@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import numeral from "numeral";
-import { calculateTax, calculateTotalIncome,calculateNetIncome } from "../../../utils/calculator"
+import {
+  calculateTax,
+  calculateTotalIncome,
+  calculateNetIncome,
+} from "../../../utils/calculator";
 import {
   Box,
   Button,
@@ -20,12 +24,19 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,AlertTitle
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
-import { bulkTaxUpdateInfo,updateTaxinfo,branch_employees_tax, month_list,branch_employee_tax_by_status} from "../../../services/taxapi";
+import {
+  bulkTaxUpdateInfo,
+  updateTaxinfo,
+  branch_employees_tax,
+  month_list,
+  branch_employee_tax_by_status,
+} from "../../../services/taxapi";
 import { currentUser } from "../../../utils/tokenUtils";
-import toast from 'react-hot-toast'
+import toast from "react-hot-toast";
 import { Branch_fc_code } from "../../../services/erpBranchapi";
 
 const TaxList = () => {
@@ -37,7 +48,7 @@ const TaxList = () => {
   const [monthOptions, setMonthOptions] = useState([]);
   const [editedData, setEditedData] = useState({});
   const [data, setData] = useState([]);
-  const [getDraftData,setDraftData] = useState([]);
+  const [getDraftData, setDraftData] = useState([]);
   const location = useLocation();
   const stateData = location.state;
   const currentDate = new Date();
@@ -53,31 +64,34 @@ const TaxList = () => {
     setIsConfirmationOpen(false);
   };
 
-  const status="Draft";
+  const status = "Draft";
   if (stateData !== null) {
     const year = stateData.year;
     const month = stateData.month;
     currentMonth = `${month}/${year}`;
   }
-  const getFc_code=async(branch_id)=>{
-    let fc_code=0;
+  const getFc_code = async (branch_id) => {
+    let fc_code = 0;
     try {
       const branch = await Branch_fc_code(branch_id);
-      fc_code=branch.fc_code;
+      fc_code = branch.fc_code;
     } catch (error) {
       console.log(error);
     }
 
     return fc_code;
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         const newBranch = await getFc_code(branch);
-        const data = await branch_employees_tax(newBranch,currentMonth);
-        const draftData=await branch_employee_tax_by_status(newBranch,currentMonth,status);
+        const data = await branch_employees_tax(newBranch, currentMonth);
+        const draftData = await branch_employee_tax_by_status(
+          newBranch,
+          currentMonth,
+          status
+        );
         setData(data);
         setDraftData(draftData);
       } catch (error) {
@@ -120,26 +134,30 @@ const TaxList = () => {
   const handleSearch = async () => {
     try {
       const newBranch = await getFc_code(branch);
-      const data = await branch_employees_tax(newBranch,selectedMonth);
-      const draftData=await branch_employee_tax_by_status(newBranch,selectedMonth,status);
+      const data = await branch_employees_tax(newBranch, selectedMonth);
+      const draftData = await branch_employee_tax_by_status(
+        newBranch,
+        selectedMonth,
+        status
+      );
       setDraftData(draftData);
       setData(data);
     } catch (error) {
       console.log(error);
     }
-  };  
+  };
 
   const handleEdit = (id) => {
     setEditedData((prevState) => ({
       ...prevState,
-      [id]: true
+      [id]: true,
     }));
   };
-  
+
   const handleSave = async (id) => {
     const editedRowData = {
       ...editedData[id],
-      id: id
+      id: id,
     };
     const isEmpty = Object.keys(editedRowData).length === 1; // Check if only the 'id' property exists
     if (isEmpty) {
@@ -157,38 +175,36 @@ const TaxList = () => {
     }
     setEditedData((prevState) => ({
       ...prevState,
-      [id]: false
+      [id]: false,
     }));
   };
-  
+
   const handleFieldChange = (event, id) => {
     const { name, value } = event.target;
     setEditedData((prevState) => ({
       ...prevState,
       [id]: {
         ...prevState[id],
-        [name]: value
-      }
+        [name]: value,
+      },
     }));
   };
 
-
-  const  submitToHeadoffice  = () => {
-    if(getDraftData.length===0){
+  const submitToHeadoffice = () => {
+    if (getDraftData.length === 0) {
       toast.error("You either submit data befor or you try empty data");
       return 0;
-      }
-      openConfirmationDialog();
-    
-  }
- const handleConfirmSave =async()=>{
-    if(getDraftData.length===0){
+    }
+    openConfirmationDialog();
+  };
+  const handleConfirmSave = async () => {
+    if (getDraftData.length === 0) {
       toast.error("You either submit data befor or you try empty data");
       return 0;
-      }
+    }
     const newData = getDraftData.map((data) => ({
       id: data.id,
-      status: "Submitted"
+      status: "Submitted",
     }));
     try {
       await bulkTaxUpdateInfo(newData);
@@ -200,16 +216,23 @@ const TaxList = () => {
       //console.error("Error updating employee data:", error);
       // Handle error here
     }
-  }
+  };
   const totalTax = (data) => {
-    const totalTaxAmount = data.map(item => {
-        const totalIncome = calculateTotalIncome(item.salary, item.house, item.transport, item.benefit);
+    const totalTaxAmount = data
+      .map((item) => {
+        const totalIncome = calculateTotalIncome(
+          item.salary,
+          item.house,
+          item.transport,
+          item.benefit
+        );
         const tax = calculateTax(totalIncome);
         return Number(tax) || 0;
-    }).reduce((acc, curr) => acc + curr, 0);
+      })
+      .reduce((acc, curr) => acc + curr, 0);
 
     return totalTaxAmount; // Ensuring totalTaxAmount is a number
-};
+  };
   return (
     <Box>
       <Box display="flex" justifyContent="flex-end" alignItems="center">
@@ -234,14 +257,13 @@ const TaxList = () => {
             Search
           </Button>
         </Box>
-        
       </Box>
       <TableContainer component={Paper}>
         <Table
           aria-label="simple table"
           sx={{
             mt: 3,
-            whiteSpace: "nowrap"
+            whiteSpace: "nowrap",
           }}
         >
           <TableHead>
@@ -272,10 +294,19 @@ const TaxList = () => {
                 </Typography>
               </TableCell>
               <TableCell>
-                <Typography color="textSecondary" variant="h6">House</Typography>
+                <Typography color="textSecondary" variant="h6">
+                  House
+                </Typography>
               </TableCell>
               <TableCell>
-                <Typography color="textSecondary" variant="h6">Benefit</Typography>
+                <Typography color="textSecondary" variant="h6">
+                  Benefit
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography color="textSecondary" variant="h6">
+                  Cost_Sharing
+                </Typography>
               </TableCell>
               <TableCell>
                 <Typography color="textSecondary" variant="h6">
@@ -285,105 +316,132 @@ const TaxList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-          {data
-  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-  .map((row, index) => (
-    <TableRow key={row.id}>
-      <TableCell>
-        <Typography>{index + 1}</Typography>
-      </TableCell>
-      <TableCell>
-        <Typography align="left">{row.fullName}</Typography>
-      </TableCell>
-      <TableCell>
-  {editedData[row.id] !== undefined ? (
-    <TextField
-      type="text"
-      name="tin"
-      value={editedData[row.id]?.tin ?? row.tin}
-      onChange={(event) => handleFieldChange(event, row.id)}
-    />
-  ) : (
-    <Typography>{row.tin}</Typography>
-  )}
-</TableCell>
+            {data
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <Typography>{index + 1}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography align="left">{row.fullName}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="text"
+                        name="tin"
+                        value={editedData[row.id]?.tin ?? row.tin}
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>{row.tin}</Typography>
+                    )}
+                  </TableCell>
 
-<TableCell>
-  {editedData[row.id] !== undefined ? (
-    <TextField
-      type="number"
-      name="salary"
-      value={editedData[row.id]?.salary ?? row.salary}
-      onChange={(event) => handleFieldChange(event, row.id)}
-    />
-  ) : (
-    <Typography>{numeral(row.salary).format("0,0.00")}</Typography>
-  )}
-</TableCell>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="number"
+                        name="salary"
+                        value={editedData[row.id]?.salary ?? row.salary}
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>
+                        {numeral(row.salary).format("0,0.00")}
+                      </Typography>
+                    )}
+                  </TableCell>
 
-<TableCell>
-  {editedData[row.id] !== undefined ? (
-    <TextField
-      type="number"
-      name="transport"
-      value={editedData[row.id]?.transport ?? row.transport}
-      onChange={(event) => handleFieldChange(event, row.id)}
-    />
-  ) : (
-    <Typography>{numeral(row.transport).format("0,0.00")}</Typography>
-  )}
-</TableCell>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="number"
+                        name="transport"
+                        value={editedData[row.id]?.transport ?? row.transport}
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>
+                        {numeral(row.transport).format("0,0.00")}
+                      </Typography>
+                    )}
+                  </TableCell>
 
-<TableCell>
-  {editedData[row.id] !== undefined ? (
-    <TextField
-      type="number"
-      name="house"
-      value={editedData[row.id]?.house ?? row.house}
-      onChange={(event) => handleFieldChange(event, row.id)}
-    />
-  ) : (
-    <Typography>{numeral(row.house).format("0,0.00")}</Typography>
-  )}
-</TableCell>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="number"
+                        name="house"
+                        value={editedData[row.id]?.house ?? row.house}
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>
+                        {numeral(row.house).format("0,0.00")}
+                      </Typography>
+                    )}
+                  </TableCell>
 
-<TableCell>
-  {editedData[row.id] !== undefined ? (
-    <TextField
-      type="number"
-      name="benefit"
-      value={editedData[row.id]?.benefit ?? row.benefit}
-      onChange={(event) => handleFieldChange(event, row.id)}
-    />
-  ) : (
-    <Typography>{numeral(row.benefit).format("0,0.00")}</Typography>
-  )}
-</TableCell>
-      <TableCell>
-      {row.status=='Draft'||row.status=='Rejected'?(
-        <Typography>
-        {editedData[row.id] ? (
-          <Button
-            variant="contained"
-            onClick={() => handleSave(row.id)}
-            color="success"
-          >
-            Save
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            onClick={() => handleEdit(row.id)}
-            color="primary"
-          >
-            Edit
-          </Button>
-        )}
-        </Typography>):(<Typography>{row.status}</Typography>)}
-      </TableCell>
-      </TableRow>
-    ))}
-</TableBody>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="number"
+                        name="benefit"
+                        value={editedData[row.id]?.benefit ?? row.benefit}
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>
+                        {numeral(row.benefit).format("0,0.00")}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editedData[row.id] !== undefined ? (
+                      <TextField
+                        type="number"
+                        name="Cost_Sharing"
+                        value={
+                          editedData[row.id]?.Cost_Sharing ?? row.Cost_Sharing
+                        }
+                        onChange={(event) => handleFieldChange(event, row.id)}
+                      />
+                    ) : (
+                      <Typography>
+                        {numeral(row.Cost_Sharing).format("0,0.00")}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {row.status == "Draft" || row.status == "Rejected" ? (
+                      <Typography>
+                        {editedData[row.id] ? (
+                          <Button
+                            variant="contained"
+                            onClick={() => handleSave(row.id)}
+                            color="success"
+                          >
+                            Save
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            onClick={() => handleEdit(row.id)}
+                            color="primary"
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </Typography>
+                    ) : (
+                      <Typography>{row.status}</Typography>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
         </Table>
       </TableContainer>
       <TablePagination
@@ -395,14 +453,15 @@ const TaxList = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-      <Button variant="contained"
-            onClick={() =>submitToHeadoffice()}
-            color="primary">
-            Submit Data
-          </Button>
+      <Button
+        variant="contained"
+        onClick={() => submitToHeadoffice()}
+        color="primary"
+      >
+        Submit Data
+      </Button>
 
-
-          {/* <Dialog open={isConfirmationOpen} onClose={closeConfirmationDialog}>
+      {/* <Dialog open={isConfirmationOpen} onClose={closeConfirmationDialog}>
         <DialogTitle>Confirm Save</DialogTitle>
         <DialogContent>
           Are you sure you want to submitte the employee data?
@@ -417,75 +476,125 @@ const TaxList = () => {
         </DialogActions>
       </Dialog> */}
 
-
       <Dialog open={isConfirmationOpen} onClose={closeConfirmationDialog}>
         <DialogTitle>Confirm Save</DialogTitle>
         <DialogContent>
-        <TableContainer component={Paper}>
-        <Table
-          aria-label="simple table"
-          sx={{
-            mt: 3,
-            whiteSpace: "nowrap"
-          }}
-        >
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography color="textSecondary" variant="h6">
-                  #
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography align="left" color="textSecondary" variant="h6">
-                  Employee Name
-                </Typography>
-              </TableCell>
+          <TableContainer component={Paper}>
+            <Table
+              aria-label="simple table"
+              sx={{
+                mt: 3,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      #
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography align="left" color="textSecondary" variant="h6">
+                      Employee Name
+                    </Typography>
+                  </TableCell>
 
-              <TableCell>
-                <Typography color="textSecondary" variant="h6">Total Sum</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography color="textSecondary" variant="h6">Tax</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography color="textSecondary" variant="h6">
-                  Net Pay
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          {data.map((row, index) => (
-    <TableRow key={row.id}>
-      <TableCell>
-        <Typography>{index + 1}</Typography>
-      </TableCell>
-      <TableCell>
-        <Typography align="left">{row.fullName}</Typography>
-        <b>S</b> = {row.salary} ,  <b>T</b> = {row.transport}  , <b>H</b> = {row.house} , <b>B</b> = {row.benefit}
-      </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Total Sum
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Tax
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Net Pay
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Pension Employee
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Pension Employeer
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Total Pension
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography color="textSecondary" variant="h6">
+                      Cost Sharing
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((row, index) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <Typography>{index + 1}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography align="left">{row.fullName}</Typography>
+                      <b>S</b> = {row.salary} , <b>T</b> = {row.transport} ,{" "}
+                      <b>H</b> = {row.house} , <b>B</b> = {row.benefit}
+                    </TableCell>
 
-      <TableCell>
-      <Typography>{calculateTotalIncome(row.salary,row.house,row.transport,row.benefit)}</Typography>
-      </TableCell>
-      
-      <TableCell>
-      <Typography>{calculateTax(calculateTotalIncome(row.salary,row.house,row.transport,row.benefit))}</Typography>
-      </TableCell>
-      <TableCell>
-      <Typography>{calculateNetIncome(row.salary,row.house,row.transport,row.benefit)}</Typography>
-      </TableCell>
-      </TableRow>
-    ))}
-</TableBody>
-        </Table>
-      </TableContainer>
-      <Box mt={2}>
-      <Typography variant="h6" style={{ color:'green' }}>
-        <b> Total Tax = <u> {totalTax(data)} </u> </b>
-      </Typography>
-    </Box>
+                    <TableCell>
+                      <Typography>
+                        {calculateTotalIncome(
+                          row.salary,
+                          row.house,
+                          row.transport,
+                          row.benefit
+                        )}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography>
+                        {calculateTax(
+                          calculateTotalIncome(
+                            row.salary,
+                            row.house,
+                            row.transport,
+                            row.benefit
+                          )
+                        )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>
+                        {calculateNetIncome(
+                          row.salary,
+                          row.house,
+                          row.transport,
+                          row.benefit
+                        )}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box mt={2}>
+            <Typography variant="h6" style={{ color: "green" }}>
+              <b>
+                {" "}
+                Total Tax = <u> {totalTax(data)} </u>{" "}
+              </b>
+            </Typography>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeConfirmationDialog} color="error">
@@ -496,8 +605,6 @@ const TaxList = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-
     </Box>
   );
 };

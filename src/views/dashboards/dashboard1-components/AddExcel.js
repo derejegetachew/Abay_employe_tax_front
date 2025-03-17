@@ -25,7 +25,7 @@ import {
 const AddExcel = () => {
   const [file, setFile] = useState(null);
   const [data, setData] = useState([]);
-  const [errors, setErrors] = useState([]);  // State for tracking field errors
+  const [errors, setErrors] = useState([]); // State for tracking field errors
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -73,14 +73,17 @@ const AddExcel = () => {
 
         console.log("Formatted Data:", formattedData);
         setData(formattedData);
-        setErrors(formattedData.map(() => ({
-          Employee_Name: false,
-          Tin_number: false,
-          Basic_Salary: false,
-          Transport_Allowance: false,
-          House_Allowance: false,
-          Other_Benefit: false,
-        })));
+        setErrors(
+          formattedData.map(() => ({
+            Employee_Name: false,
+            Tin_number: false,
+            Basic_Salary: false,
+            Transport_Allowance: false,
+            House_Allowance: false,
+            Other_Benefit: false,
+            Cost_Sharing: false,
+          }))
+        );
       };
       reader.readAsBinaryString(file);
     } else {
@@ -109,12 +112,12 @@ const AddExcel = () => {
       Employee_Name: !row.Employee_Name,
       // Tin_number: !row.Tin_number,
       Basic_Salary: !row.Basic_Salary,
-     Transport_Allowance: !row.Transport_Allowance,
+      Transport_Allowance: !row.Transport_Allowance,
       House_Allowance: !row.House_Allowance,
+      // Cost_Sharing: !row.Cost_Sharing,
     }));
     setErrors(newErrors);
 
-   
     return newErrors.every((rowErrors) =>
       Object.values(rowErrors).every((error) => !error)
     );
@@ -128,39 +131,42 @@ const AddExcel = () => {
     openConfirmationDialog();
   };
   const handleConfirmSave = async () => {
-    try{
-      const taxRecords = await Promise.all(employeeData.map(async (employee) => {
-        const newBranch = await getFc_code(user.branch_id,); 
-        console.log(newBranch);
-    return{
-      fullName: employee.Employee_Name,
-      benefit: employee.Other_Benefit,
-      branch: newBranch,
-      house: employee.House_Allowance,
-      transport: employee.Transport_Allowance,
-      tin: employee.Tin_number,
-      month: currentMonth,
-      status: "Draft",
-      salary: employee.Basic_Salary,
-      draftby: userName,
+    try {
+      const taxRecords = await Promise.all(
+        employeeData.map(async (employee) => {
+          const newBranch = await getFc_code(user.branch_id);
+          console.log(newBranch);
+          return {
+            fullName: employee.Employee_Name,
+            benefit: employee.Other_Benefit,
+            branch: newBranch,
+            house: employee.House_Allowance,
+            transport: employee.Transport_Allowance,
+            tin: employee.Tin_number,
+            month: currentMonth,
+            status: "Draft",
+            salary: employee.Basic_Salary,
+            Cost_Sharing: employee.Cost_Sharing,
+            draftby: userName,
+          };
+        })
+      );
+      console.log(taxRecords);
+      bulkTaxRecord(taxRecords)
+        .then((registerData) => {
+          closeConfirmationDialog();
+          toast.success("Successfully registered.");
+          navigate("/dashboards/tax-list", { state: stateData });
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error("An error occurred while saving data.");
+        });
+    } catch (error) {
+      // Handle any errors that occur during the process
+      console.error("Error saving tax records:", error);
     }
-    }));
-console.log(taxRecords)
-    bulkTaxRecord(taxRecords)
-      .then((registerData) => {
-        closeConfirmationDialog();
-        toast.success("Successfully registered.");
-        navigate("/dashboards/tax-list", { state: stateData });
-      })
-     .catch((error) => {
-        console.error(error);
-        toast.error("An error occurred while saving data.");
-      });
-  } catch (error) {
-    // Handle any errors that occur during the process
-    console.error('Error saving tax records:', error);
-  }
-  }
+  };
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -174,17 +180,17 @@ console.log(taxRecords)
     navigate("/tables/basic-table");
   };
 
-  const getFc_code=async(branch_id)=>{
-    let fc_code=0;
+  const getFc_code = async (branch_id) => {
+    let fc_code = 0;
     try {
       const branch = await Branch_fc_code(branch_id);
-      fc_code=branch.fc_code;
+      fc_code = branch.fc_code;
     } catch (error) {
       console.log(error);
     }
 
     return fc_code;
-  }
+  };
   return (
     <>
       <Box>
@@ -229,12 +235,16 @@ console.log(taxRecords)
                   <TableCell>Transport_Allowance </TableCell>
                   <TableCell>House_Allowance</TableCell>
                   <TableCell>Other_Benefit</TableCell>
+                  <TableCell>Cost_Sharing</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {(rowsPerPage > 0
-                  ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  ? data.slice(
+                      page * rowsPerPage,
+                      page * rowsPerPage + rowsPerPage
+                    )
                   : data
                 ).map((row, index) => (
                   <TableRow key={index}>
@@ -251,7 +261,9 @@ console.log(taxRecords)
                           size="small"
                           variant="outlined"
                           error={errors[index]?.Employee_Name}
-                          helperText={errors[index]?.Employee_Name ? "Required" : ""}
+                          helperText={
+                            errors[index]?.Employee_Name ? "Required" : ""
+                          }
                         />
                       ) : (
                         row.Employee_Name || ""
@@ -269,7 +281,9 @@ console.log(taxRecords)
                           size="small"
                           variant="outlined"
                           error={errors[index]?.Tin_number}
-                          helperText={errors[index]?.Tin_number ? "Required" : ""}
+                          helperText={
+                            errors[index]?.Tin_number ? "Required" : ""
+                          }
                         />
                       ) : (
                         row.Tin_number || ""
@@ -300,12 +314,18 @@ console.log(taxRecords)
                           name="Transport_Allowance"
                           value={row.Transport_Allowance || ""}
                           onChange={(e) =>
-                            handleEdit(index, "Transport_Allowance", e.target.value)
+                            handleEdit(
+                              index,
+                              "Transport_Allowance",
+                              e.target.value
+                            )
                           }
                           size="small"
                           variant="outlined"
                           error={errors[index]?.Transport_Allowance}
-                          helperText={errors[index]?.Transport_Allowance ? "Required" : ""}
+                          helperText={
+                            errors[index]?.Transport_Allowance ? "Required" : ""
+                          }
                         />
                       ) : (
                         row.Transport_Allowance || ""
@@ -323,7 +343,9 @@ console.log(taxRecords)
                           size="small"
                           variant="outlined"
                           error={errors[index]?.House_Allowance}
-                          helperText={errors[index]?.House_Allowance ? "Required" : ""}
+                          helperText={
+                            errors[index]?.House_Allowance ? "Required" : ""
+                          }
                         />
                       ) : (
                         row.House_Allowance || ""
@@ -341,10 +363,32 @@ console.log(taxRecords)
                           size="small"
                           variant="outlined"
                           error={errors[index]?.Other_Benefit}
-                          helperText={errors[index]?.Other_Benefit ? "Required" : ""}
+                          helperText={
+                            errors[index]?.Other_Benefit ? "Required" : ""
+                          }
                         />
                       ) : (
                         row.Other_Benefit || ""
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingRowIndex === index ? (
+                        <TextField
+                          type="number"
+                          name="Cost_Sharing"
+                          value={row.Cost_Sharing || ""}
+                          onChange={(e) =>
+                            handleEdit(index, "Cost_Sharing", e.target.value)
+                          }
+                          size="small"
+                          variant="outlined"
+                          error={errors[index]?.Cost_Sharing}
+                          helperText={
+                            errors[index]?.Cost_Sharing ? "Required" : ""
+                          }
+                        />
+                      ) : (
+                        row.Cost_Sharing || ""
                       )}
                     </TableCell>
                     <TableCell>
@@ -371,11 +415,7 @@ console.log(taxRecords)
 
         {data.length > 0 && (
           <Box sx={{ mt: 2 }}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleSave}
-            >
+            <Button variant="contained" color="secondary" onClick={handleSave}>
               Save
             </Button>
           </Box>

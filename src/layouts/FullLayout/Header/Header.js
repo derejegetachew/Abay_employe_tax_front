@@ -1,14 +1,13 @@
 import React from "react";
 //import { Link } from 'react-router-dom';
 
-import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-import AddToPhotosOutlinedIcon from '@mui/icons-material/AddToPhotosOutlined';
-import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import { Typography
-} from "@mui/material";
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import AddToPhotosOutlinedIcon from "@mui/icons-material/AddToPhotosOutlined";
+import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import { Typography } from "@mui/material";
 
 import {
   AppBar,
@@ -27,9 +26,9 @@ import userimg from "../../../assets/images/users/user.jpg";
 import { useNavigate } from "react-router-dom";
 import { currentUser } from "../../../utils/tokenUtils";
 const user = currentUser();
-console.log(user)
-let fullName=`${user.first_name} ${user.middle_name}`
-let position=`${user.position}`
+console.log(user);
+let fullName = `${user.first_name} ${user.middle_name}`;
+let position = `${user.position}`;
 
 const Header = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -38,11 +37,10 @@ const Header = (props) => {
     setAnchorEl(event.currentTarget);
   };
   const navigate = useNavigate();
-  
 
   const handleLogout = () => {
     // Redirect to the login page or any other desired page
-    localStorage.clear()
+    localStorage.clear();
     navigate("/login", { replace: true }); // Replace "/login" with the appropriate route
   };
   const handleClose = () => {
@@ -83,31 +81,27 @@ const Header = (props) => {
               lg: "none",
               xs: "inline",
             },
-              marginLeft: {
-          xs: 'auto', // Aligns the icon to the left on small screens
-        },
+            marginLeft: {
+              xs: "auto", // Aligns the icon to the left on small screens
+            },
           }}
         >
           <MenuOutlinedIcon width="20" height="20" />
         </IconButton>
-      
+
         <Box flexGrow={1} />
-        <Typography variant="h1" style={{ textAlign: "center", fontWeight: "bold", color: "black" ,fontSize: "1.5rem",width:'100%'}}>
+        <Typography
+          variant="h1"
+          style={{
+            textAlign: "center",
+            fontWeight: "bold",
+            color: "black",
+            fontSize: "1.5rem",
+            width: "100%",
+          }}
+        >
           Abay Bank Employee Tax Record System
         </Typography>
-        {/**  */}
-        
-
-        {/* ------------------------------------------- */}
-        {/* Notifications Dropdown */}
-        {/* ------------------------------------------- */}
-   
-        {/* ------------------------------------------- */}
-        {/* End Notifications Dropdown */}
-        {/* ------------------------------------------- */}
-        {/* ------------------------------------------- */}
-        {/* Profile Dropdown */}
-        {/* ------------------------------------------- */}
         <Box
           sx={{
             width: "1px",
@@ -167,9 +161,8 @@ const Header = (props) => {
                 ml: 2,
               }}
             >
-             {fullName}
+              {fullName}
             </Box>
-            
           </MenuItem>
           <MenuItem onClick={handleClose4}>
             {/* <Avatar
@@ -183,8 +176,7 @@ const Header = (props) => {
                 ml: 2,
               }}
             >
-           
-             {position}
+              {position}
             </Box>
           </MenuItem>
           <Divider />
