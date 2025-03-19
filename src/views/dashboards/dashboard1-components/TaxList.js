@@ -4,6 +4,10 @@ import {
   calculateTax,
   calculateTotalIncome,
   calculateNetIncome,
+  calculateCostSharing,
+  calculateTotalPension,
+  calculateEmployerContribution,
+  calculateEmployeeContribution,
 } from "../../../utils/calculator";
 import {
   Box,
@@ -198,25 +202,31 @@ const TaxList = () => {
     openConfirmationDialog();
   };
   const handleConfirmSave = async () => {
-    if (getDraftData.length === 0) {
-      toast.error("You either submit data befor or you try empty data");
-      return 0;
+    console.log("getDraftData value:", getDraftData);
+
+    if (!Array.isArray(getDraftData) || getDraftData.length === 0) {
+      toast.error("You either submitted data before or tried empty data");
+      return;
     }
+
     const newData = getDraftData.map((data) => ({
       id: data.id,
       status: "Submitted",
     }));
+
+    console.log("Processed Data to Submit:", newData);
+
     try {
       await bulkTaxUpdateInfo(newData);
-      toast.success("You have successfully submitte the data");
+      toast.success("You have successfully submitted the data");
       closeConfirmationDialog();
       window.location.reload();
     } catch (error) {
-      toast.error("Error Check Your data");
-      //console.error("Error updating employee data:", error);
-      // Handle error here
+      toast.error("Error: Check your data");
+      console.error("Error updating employee data:", error);
     }
   };
+
   const totalTax = (data) => {
     const totalTaxAmount = data
       .map((item) => {
@@ -305,7 +315,7 @@ const TaxList = () => {
               </TableCell>
               <TableCell>
                 <Typography color="textSecondary" variant="h6">
-                  Cost_Sharing
+                  cost_sharing
                 </Typography>
               </TableCell>
               <TableCell>
@@ -401,16 +411,18 @@ const TaxList = () => {
                   <TableCell>
                     {editedData[row.id] !== undefined ? (
                       <TextField
-                        type="number"
-                        name="Cost_Sharing"
+                        type="text"
+                        name="cost_sharing"
                         value={
-                          editedData[row.id]?.Cost_Sharing ?? row.Cost_Sharing
+                          editedData[row.id]?.cost_sharing ?? row.cost_sharing
                         }
                         onChange={(event) => handleFieldChange(event, row.id)}
                       />
                     ) : (
                       <Typography>
-                        {numeral(row.Cost_Sharing).format("0,0.00")}
+                        {row.cost_sharing === "yes"
+                          ? numeral(row.salary * 0.1).format("0,0.00")
+                          : ""}
                       </Typography>
                     )}
                   </TableCell>
@@ -460,22 +472,6 @@ const TaxList = () => {
       >
         Submit Data
       </Button>
-
-      {/* <Dialog open={isConfirmationOpen} onClose={closeConfirmationDialog}>
-        <DialogTitle>Confirm Save</DialogTitle>
-        <DialogContent>
-          Are you sure you want to submitte the employee data?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeConfirmationDialog} color="error">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmSave} color="success">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog> */}
-
       <Dialog open={isConfirmationOpen} onClose={closeConfirmationDialog}>
         <DialogTitle>Confirm Save</DialogTitle>
         <DialogContent>
@@ -517,22 +513,22 @@ const TaxList = () => {
                   </TableCell>
                   <TableCell>
                     <Typography color="textSecondary" variant="h6">
-                      Pension Employee
+                      pension Employee(7%)
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography color="textSecondary" variant="h6">
-                      Pension Employeer
+                      pension Employeer(11%)
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography color="textSecondary" variant="h6">
-                      Total Pension
+                      Total pension(18%)
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography color="textSecondary" variant="h6">
-                      Cost Sharing
+                      CostSharing
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -580,6 +576,28 @@ const TaxList = () => {
                           row.transport,
                           row.benefit
                         )}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>
+                        {calculateEmployeeContribution(row.salary)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>
+                        {calculateEmployerContribution(row.salary)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>
+                        {calculateTotalPension(row.salary)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>
+                        {row.cost_sharing === "yes"
+                          ? numeral(row.salary * 0.1).format("0,0.00")
+                          : ""}
                       </Typography>
                     </TableCell>
                   </TableRow>

@@ -1,8 +1,8 @@
 import { lazy } from "react";
-import { Navigate,Redirect } from "react-router-dom";
+import { Navigate, Redirect } from "react-router-dom";
 import PriceTable from "../views/tables/PriceTable.js";
- import AddBenefit from "../views/dashboards/dashboard1-components/AddBenfit.js";
- import AddExcel from "../views/dashboards/dashboard1-components/AddExcel.js";
+import AddBenefit from "../views/dashboards/dashboard1-components/AddBenfit.js";
+import AddExcel from "../views/dashboards/dashboard1-components/AddExcel.js";
 import ProtectedRoute from "../views/ProtectedRoute.js";
 
 /****Layouts*****/
@@ -14,13 +14,26 @@ const Dashboard1 = lazy(() => import("../views/dashboards/Dashboard1.js"));
 const Login = lazy(() => import("../views/dashboards/SignIn.js"));
 /*****Tables******/
 const BasicTable = lazy(() => import("../views/tables/BasicTable.js"));
-const TaxList = lazy(() => import("../views/dashboards/dashboard1-components/TaxList.js"));
-const TaxReport = lazy(() => import("../views/dashboards/dashboard1-components/TaxReport.js"));
-const EmployeeTin = lazy(() => import("../views/dashboards/dashboard1-components/EmployeeTin.js"));
+const TaxList = lazy(
+  () => import("../views/dashboards/dashboard1-components/TaxList.js")
+);
+const TaxReport = lazy(
+  () => import("../views/dashboards/dashboard1-components/TaxReport.js")
+);
+const EmployeeTin = lazy(
+  () => import("../views/dashboards/dashboard1-components/EmployeeTin.js")
+);
+const Pension = lazy(
+  () =>
+    import("../views/dashboards/dashboard1-components/pension_contribution.js")
+);
+const CostSharing = lazy(
+  () => import("../views/dashboards/dashboard1-components/costSharing.js")
+);
 
 // form elements
-const ExAutoComplete = lazy(() =>
-  import("../views/FormElements/ExAutoComplete.js")
+const ExAutoComplete = lazy(
+  () => import("../views/FormElements/ExAutoComplete.js")
 );
 const ExButton = lazy(() => import("../views/FormElements/ExButton.js"));
 const ExCheckbox = lazy(() => import("../views/FormElements/ExCheckbox.js"));
@@ -29,18 +42,20 @@ const ExSlider = lazy(() => import("../views/FormElements/ExSlider.js"));
 const ExSwitch = lazy(() => import("../views/FormElements/ExSwitch.js"));
 // form layouts
 const FormLayouts = lazy(() => import("../views/FormLayouts/FormLayouts.js"));
-const isLoggedIn=false;
+const isLoggedIn = false;
 /*****Routes******/
 const ThemeRoutes = [
   { path: "/", exact: true, element: <Navigate to="/login" /> },
   {
     path: "/",
-    element:  <ProtectedRoute>{<FullLayout />}</ProtectedRoute>,
+    element: <ProtectedRoute>{<FullLayout />}</ProtectedRoute>,
     children: [
       { path: "dashboards/dashboard1", exact: true, element: <Dashboard1 /> },
       { path: "dashboards/tax-list", element: <TaxList /> },
-      { path: "dashboards/tin-list", element: <EmployeeTin/> },
+      { path: "dashboards/tin-list", element: <EmployeeTin /> },
       { path: "dashboards/tax-report", element: <TaxReport /> },
+      { path: "dashboards/Pension Contribution", element: <Pension /> },
+      { path: "dashboards/Cost Sharing", element: <CostSharing /> },
       { path: "tables/basic-table", element: <BasicTable /> },
       { path: "tables/price-table", element: <PriceTable /> },
       { path: "tables/add-benefit", element: <AddBenefit /> },

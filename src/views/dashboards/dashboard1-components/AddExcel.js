@@ -81,7 +81,7 @@ const AddExcel = () => {
             Transport_Allowance: false,
             House_Allowance: false,
             Other_Benefit: false,
-            Cost_Sharing: false,
+            cost_sharing: false,
           }))
         );
       };
@@ -146,7 +146,7 @@ const AddExcel = () => {
             month: currentMonth,
             status: "Draft",
             salary: employee.Basic_Salary,
-            Cost_Sharing: employee.Cost_Sharing,
+            cost_sharing: employee.cost_sharing,
             draftby: userName,
           };
         })
@@ -235,7 +235,7 @@ const AddExcel = () => {
                   <TableCell>Transport_Allowance </TableCell>
                   <TableCell>House_Allowance</TableCell>
                   <TableCell>Other_Benefit</TableCell>
-                  <TableCell>Cost_Sharing</TableCell>
+                  <TableCell>cost_sharing</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
@@ -375,20 +375,20 @@ const AddExcel = () => {
                       {editingRowIndex === index ? (
                         <TextField
                           type="number"
-                          name="Cost_Sharing"
-                          value={row.Cost_Sharing || ""}
+                          name="cost_sharing"
+                          value={row.cost_sharing || ""}
                           onChange={(e) =>
-                            handleEdit(index, "Cost_Sharing", e.target.value)
+                            handleEdit(index, "cost_sharing", e.target.value)
                           }
                           size="small"
                           variant="outlined"
-                          error={errors[index]?.Cost_Sharing}
+                          error={errors[index]?.cost_sharing}
                           helperText={
-                            errors[index]?.Cost_Sharing ? "Required" : ""
+                            errors[index]?.cost_sharing ? "Required" : ""
                           }
                         />
                       ) : (
-                        row.Cost_Sharing || ""
+                        row.cost_sharing || ""
                       )}
                     </TableCell>
                     <TableCell>
